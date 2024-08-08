@@ -1,4 +1,4 @@
-CREATE TABLE grooup
+CREATE TABLE group
 (
     id    serial      NOT NULL,
     title varchar(20) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE student
     record_book_id integer,
     CONSTRAINT student_pkey PRIMARY KEY (id),
     CONSTRAINT fk_group_id FOREIGN KEY (group_id)
-        REFERENCES public.grooup (id),
+        REFERENCES public.group (id),
     CONSTRAINT fk_record_book_id FOREIGN KEY (record_book_id)
         REFERENCES public.record_book (id)
 );

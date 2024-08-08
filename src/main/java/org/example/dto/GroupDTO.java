@@ -1,22 +1,23 @@
 package org.example.dto;
 
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.model.Student;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecordBookDTO {
+public class GroupDTO {
 
     private int id;
 
-    @Min(value = 10)
-    @Max(value = 100)
-    private int rating;
+    @Size(max = 20, min = 2)
+    private String name;
+
+    @Min(value = 1)
+    private int room;
 }

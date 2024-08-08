@@ -8,30 +8,25 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface StudentDAO extends JpaRepository<Student, Integer> {
 
-    Optional<Student> findByName(String name);
+    List<Student> findAllByName(String name);
 
-    Optional<Student> findBySurname(String surname);
+    List<Student> findAllBySurname(String surname);
 
-    List<Student> findByGrooupId(int groupId);
+    List<Student> findAllByGroupId(Integer groupId);
 
-    List<Student> findByGrooupTitle(String groupName);
+    List<Student> findAllByGroupName(String groupName);
 
     List<Student> findByPaymentsIsEmpty();
 
-    Optional<Student> findById(int studentId);
-
-    @Query("UPDATE Student s SET s.grooup.id = :newGroupId WHERE s.id = :studentId")
+    @Query(value = "UPDATE Student s SET s.group.id = :newGroupId WHERE s.id = :studentId")
     @Modifying
-    void updateGrooupById(@Param("studentId") int studentId, @Param("newGroupId") int newGroupId);
+    void updateGroupById(@Param("studentId") Integer studentId, @Param("newGroupId") Integer newGroupId);
 
     boolean existsByName(String name);
 
     boolean existsBySurname(String surname);
-
-    boolean existsByAge(int age);
 }

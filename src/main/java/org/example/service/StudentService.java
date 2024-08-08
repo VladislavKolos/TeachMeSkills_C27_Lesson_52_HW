@@ -3,17 +3,18 @@ package org.example.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dao.StudentDAO;
-import org.example.dto.GrooupDTO;
 import org.example.dto.StudentDTO;
-import org.example.model.Grooup;
+import org.example.dto.StudentResponseDTO;
 import org.example.model.Student;
 import org.example.service.mapper_service.EntityMapperService;
-import org.example.validator.custom_validator.CustomStudentDTOValidator;
+import org.example.validator.custom_validator.ExistGroupIdValidator;
+import org.example.validator.custom_validator.ExistStudentIdValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -24,116 +25,63 @@ public class StudentService {
 
     private final EntityMapperService mapperService;
 
-    private final CustomStudentDTOValidator customValidator;
-
     @Transactional(readOnly = true)
-    public StudentDTO getStudentByName(String name) {
-        if (!customValidator.isExistStudentName(name)) {
-            log.error("Student with this name: " + name + " does not exist");
-            throw new RuntimeException("Student with this name: " + name + " does not exist");
-        }
-
-        Optional<Student> student = studentDAO.findByName(name);
-
-        return student.map(mapperService::convertToStudentDto).orElseThrow(() -> {
-            log.error("Student with name: " + name + " not found");
-            return new RuntimeException("Student not found");
-        });
+    public List<StudentResponseDTO> getStudentsByName(String name) {
+        return studentDAO.findAllByName(name).stream().map(mapperService::convertToStudentResponseDto).toList();
     }
 
     @Transactional(readOnly = true)
-    public StudentDTO getStudentBySurname(String surname) {
-        if (!customValidator.isExistStudentSurname(surname)) {
-            log.error("Student with this surname: " + surname + " does not exist");
-            throw new RuntimeException("Student with this surname: " + surname + " does not exist");
-        }
-
-        Optional<Student> student = studentDAO.findBySurname(surname);
-
-        return student.map(mapperService::convertToStudentDto).orElseThrow(() -> {
-            log.error("Student with surname: " + surname + " not found");
-            return new RuntimeException("Student not found");
-        });
+    public List<StudentResponseDTO> getStudentsBySurname(String surname) {
+        return studentDAO.findAllBySurname(surname).stream().map(mapperService::convertToStudentResponseDto).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<StudentDTO> getStudentsByGroupId(GrooupDTO grooupDTO) {
-        Grooup grooup = mapperService.convertToGroupEntity(grooupDTO);
-
-        List<Student> students = studentDAO.findByGrooupId(grooup.getId());
-
-        List<StudentDTO> studentsDTO = students.stream().map(mapperService::convertToStudentDto).toList();
-
-        if (studentsDTO.isEmpty()) {
-            log.error("Students from group with group ID: " + grooup.getId() + " not found");
-            throw new RuntimeException("Students not found");
-        }
-        return studentsDTO;
+    public List<StudentResponseDTO> getStudentsByGroupId(Integer id) {
+        return studentDAO.findAllByGroupId(id).stream().map(mapperService::convertToStudentResponseDto).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<StudentDTO> getStudentsByGroupTitle(GrooupDTO grooupDTO) {
-        Grooup grooup = mapperService.convertToGroupEntity(grooupDTO);
-
-        List<Student> students = studentDAO.findByGrooupTitle(grooup.getTitle());
-
-        List<StudentDTO> studentsDTO = students.stream().map(mapperService::convertToStudentDto).toList();
-
-        if (studentsDTO.isEmpty()) {
-            log.error("Students from group: " + grooup.getTitle() + " not found");
-            throw new RuntimeException("Students not found");
-        }
-        return studentsDTO;
+    public List<StudentResponseDTO> getStudentsByGroupName(String groupName) {
+        return studentDAO.findAllByGroupName(groupName)
+                .stream()
+                .map(mapperService::convertToStudentResponseDto)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<StudentDTO> getStudentsWithNoPayments() {
-        List<Student> students = studentDAO.findByPaymentsIsEmpty();
-
-        List<StudentDTO> studentsDTO = students.stream().map(mapperService::convertToStudentDto).toList();
-
-        if (studentsDTO.isEmpty()) {
-            log.error("Students with no payments not found");
-            throw new RuntimeException("Students with no payments not found");
-        }
-        return studentsDTO;
+    public List<StudentResponseDTO> getStudentsWithNoPayments() {
+        return studentDAO.findByPaymentsIsEmpty().stream().map(mapperService::convertToStudentResponseDto).toList();
     }
 
     @Transactional
-    public StudentDTO createStudent(StudentDTO studentDTO) {
-        Student student = mapperService.convertToStudentEntity(studentDTO);
-
-        Student createdStudent = studentDAO.save(student);
-
-        return mapperService.convertToStudentDto(createdStudent);
+    public StudentResponseDTO createStudent(StudentDTO studentDTO) {
+        return Optional.of(studentDTO)
+                .map(mapperService::convertToStudentEntity)
+                .map(studentDAO::save)
+                .map(mapperService::convertToStudentResponseDto)
+                .orElseThrow();
     }
 
-    public StudentDTO updateStudent(int newAge, StudentDTO studentDTO) {
-        Student student = mapperService.convertToStudentEntity(studentDTO);
+    public StudentResponseDTO updateStudent(Integer id, Integer newAge) {
 
-        student.setAge(newAge);
-        Student updatedStudent = studentDAO.save(student);
-
-        return mapperService.convertToStudentDto(updatedStudent);
-    }
-
-    @Transactional
-    public void deleteStudent(StudentDTO studentDTO) {
-        Student student = mapperService.convertToStudentEntity(studentDTO);
-
-        studentDAO.deleteById(student.getId());
+        return studentDAO.findById(id)
+                .map(student -> student.setAge(newAge))
+                .map(studentDAO::save)
+                .map(mapperService::convertToStudentResponseDto)
+                .orElseThrow(() -> new RuntimeException("User: " + id + " not found"));
     }
 
     @Transactional
-    public StudentDTO transferStudentToAnotherGroup(StudentDTO studentDTO, int newGroupId) {
-        Student student = mapperService.convertToStudentEntity(studentDTO);
+    public void deleteStudent(Integer id) {
+        studentDAO.deleteById(id);
+    }
 
-        studentDAO.updateGrooupById(student.getId(), newGroupId);
+    @Transactional
+    public StudentResponseDTO transferStudentToAnotherGroup(Integer id, Integer newGroupId) {
+        studentDAO.updateGroupById(id, newGroupId);
 
-        Optional<Student> finalStudent = studentDAO.findById(student.getId());
-
-        return finalStudent.map(mapperService::convertToStudentDto).orElseThrow(() -> {
-            log.error("Student with student ID: " + student.getId() + " not found");
+        return studentDAO.findById(id).map(mapperService::convertToStudentResponseDto).orElseThrow(() -> {
+            log.info("Student with student ID: " + id + " not found");
             return new RuntimeException("Student not found");
         });
     }

@@ -23,6 +23,4 @@ public class PaymentDTO {
 
     @Size(min = 4, max = 6)
     private String status;
-
-    private StudentDTO studentDTO;
 }

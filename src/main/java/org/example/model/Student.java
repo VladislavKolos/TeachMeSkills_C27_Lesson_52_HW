@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
 @Table(name = "student")
 @Getter
 @Setter
+@Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Student {
@@ -37,15 +39,15 @@ public class Student {
     @Column(name = "age")
     private int age;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "record_book_id")
     private RecordBook recordBook;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "group_id")
-    private Grooup grooup;
+    private Group group;
 
-    @OneToMany(mappedBy = "student")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
     private List<Payment> payments;
 
 }
