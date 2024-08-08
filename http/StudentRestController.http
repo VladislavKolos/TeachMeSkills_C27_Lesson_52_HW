@@ -1,0 +1,58 @@
+###Get Students by Name with valid name
+GET http://localhost:8080/students/name/Vladislav
+
+###Get Students by Name with invalid Name
+GET http://localhost:8080/students/name/NotVladislav
+
+###Get Students by Surname with valid Surname
+GET http://localhost:8080/students/surname/Kolos
+
+###Get Students by Surname with invalid Surname
+GET http://localhost:8080/students/surname/NotKolos
+
+###Get Students by group ID with valid group ID
+GET http://localhost:8080/students/groups/2
+
+###Get Students by group ID with invalid group ID
+GET http://localhost:8080/students/groups/10
+
+###Get Students by group name with valid group name
+GET http://localhost:8080/students/groups/title/GroupA
+
+###Get Students by group name with invalid group name
+GET http://localhost:8080/students/groups/title/GroupW
+
+###Get Students with no payments
+GET http://localhost:8080/students/no-payments
+
+###Create Student
+POST http://localhost:8080/students/create
+Content-Type: application/json
+
+{
+  "name": "Alex",
+  "surname": "KeyJay",
+  "age": 21,
+  "groupId": 1,
+  "recordBookDTO": {
+    "rating": 90
+  },
+  "paymentsDTO": []
+}
+
+###Update Student age
+PUT http://localhost:8080/students/23/update?newAge=30
+Content-Type: application/x-www-form-urlencoded
+
+###Delete Student
+DELETE http://localhost:8080/students/24
+
+###Transfer Student to another group
+PUT http://localhost:8080/students/23/transfer?newGroupId=3
+Content-Type: application/x-www-form-urlencoded
+
+###Transfer Student to another non-existent group (with invalid new group ID)
+PUT http://localhost:8080/students/23/transfer?newGroupId=4
+Content-Type: application/x-www-form-urlencoded
+
+
